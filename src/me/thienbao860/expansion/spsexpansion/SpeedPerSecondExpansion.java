@@ -18,6 +18,9 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Listener, Cacheable {
 
     boolean activate;
@@ -41,7 +44,7 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
 
     @Override
     public String getVersion() {
-        return "1.0";
+        return "1.1";
     }
 
     @Override
@@ -49,26 +52,13 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
 
         startClock();
         //TODO: Logical fix for these two later
-//        if (params.equals("clickLeft")) {
-//            return String.valueOf(manager.getSPS(player, SpeedType.LEFT_CLICK));
-//        }
-//        if (params.equals("clickRight")) {
-//            return String.valueOf(manager.getSPS(player, SpeedType.RIGHT_CLICK));
-//        }
-        if (params.equals("blockBreak")) {
-            return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_BREAKING)));
-        }
-        if (params.equals("blockPlace")) {
-            return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_PLACING)));
-        }
-        if (params.equals("speed")) {
-            return String.valueOf(toInt(manager.getSPS(player, SpeedType.SPEEDING)));
-        }
-        if (params.equals("damaging")) {
-            return String.format("%.2f", manager.getSPS(player, SpeedType.ENTITY_DAMAGING));
-        }
-        if (params.equals("expCollected")) {
-            return String.valueOf(toInt(manager.getSPS(player, SpeedType.EXP_COLLECTED)));
+        switch (params) {
+            case "blockBreak": return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_BREAKING)));
+            case "blockPlace": return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_PLACING)));
+            case "speed": return String.valueOf(toInt(manager.getSPS(player, SpeedType.SPEEDING)));
+            case "damaging": return formatted(manager.getSPS(player, SpeedType.ENTITY_DAMAGING));
+            case "hurt": return String.valueOf(toInt(manager.getSPS(player, SpeedType.PLAYER_HURT)));
+            case "expCollected": return String.valueOf(toInt(manager.getSPS(player, SpeedType.EXP_COLLECTED)));
         }
 
         return null;
@@ -110,6 +100,9 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
         if (e.getDamager() instanceof Player) {
             manager.addIn((Player) e.getDamager(), e.getFinalDamage(), SpeedType.ENTITY_DAMAGING);
         }
+        if (e.getEntity() instanceof Player) {
+            manager.addIn((Player) e.getEntity(), e.getFinalDamage(), SpeedType.PLAYER_HURT);
+        }
     }
 
     @EventHandler
@@ -130,5 +123,11 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
 
     public int toInt(double d) {
         return (int) d;
+    }
+
+    private String formatted(double d) {
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.CEILING);
+        return df.format(d);
     }
 }
