@@ -49,6 +49,7 @@ public class TypeManager {
         list.add(new Speeding());
         list.add(new EntityDamaging());
         list.add(new ExpCollecting());
+        list.add(new PlayerHurting());
     }
 
     public double getSPS(Player player, SpeedType type) {

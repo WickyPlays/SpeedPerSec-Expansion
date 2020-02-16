@@ -7,5 +7,6 @@ public enum SpeedType {
     BLOCK_PLACING,
     SPEEDING,
     ENTITY_DAMAGING,
+    PLAYER_HURT,
     EXP_COLLECTED
 }
