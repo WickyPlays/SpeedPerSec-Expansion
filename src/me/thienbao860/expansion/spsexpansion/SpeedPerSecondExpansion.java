@@ -57,7 +57,7 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
             case "blockPlace": return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_PLACING)));
             case "speed": return String.valueOf(toInt(manager.getSPS(player, SpeedType.SPEEDING)));
             case "damaging": return formatted(manager.getSPS(player, SpeedType.ENTITY_DAMAGING));
-            case "hurt": return String.valueOf(toInt(manager.getSPS(player, SpeedType.PLAYER_HURT)));
+            case "hurting": return String.valueOf(toInt(manager.getSPS(player, SpeedType.PLAYER_HURT)));
             case "expCollected": return String.valueOf(toInt(manager.getSPS(player, SpeedType.EXP_COLLECTED)));
         }
 
