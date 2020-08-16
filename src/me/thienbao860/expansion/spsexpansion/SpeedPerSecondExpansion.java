@@ -7,6 +7,7 @@ import me.thienbao860.expansion.spsexpansion.manager.SpeedType;
 import me.thienbao860.expansion.spsexpansion.manager.TypeManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,12 +24,12 @@ import java.text.DecimalFormat;
 
 public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Listener, Cacheable {
 
-    boolean activate;
-    TypeManager manager;
-    BukkitTask task;
+    private boolean activate;
+    private final TypeManager manager;
+    private BukkitTask task;
 
     public SpeedPerSecondExpansion() {
-        activate = true;
+        activate = false;
         manager = TypeManager.instance();
     }
 
@@ -44,14 +45,15 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
 
     @Override
     public String getVersion() {
-        return "1.1";
+        return "1.1.1";
     }
 
-    @Override
-    public String onPlaceholderRequest(Player player, String params) {
+    public String onRequest(OfflinePlayer p, String params) {
 
+        if (p == null) return null;
+        Player player = p.getPlayer();
+        if (player == null) return null;
         startClock();
-        //TODO: Logical fix for these two later
         switch (params) {
             case "blockBreak": return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_BREAKING)));
             case "blockPlace": return String.valueOf(toInt(manager.getSPS(player, SpeedType.BLOCK_PLACING)));
@@ -62,17 +64,15 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
         }
 
         return null;
-
     }
 
     public void startClock() {
-        if (activate) {
-            activate = false;
+        if (!activate) {
+            activate = true;
             task = Bukkit.getScheduler().runTaskTimerAsynchronously(PlaceholderAPIPlugin.getInstance(), () -> manager.update(), 0L, 20L);
         }
     }
 
-    //TODO: Add the CPSs' later
     @EventHandler
     public void breakBlock(BlockBreakEvent e) {
         manager.addIn(e.getPlayer(), SpeedType.BLOCK_BREAKING);
@@ -118,7 +118,7 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
     @Override
     public void clear() {
         activate = true;
-        task.cancel();
+        if (task != null) task.cancel();
     }
 
     public int toInt(double d) {
