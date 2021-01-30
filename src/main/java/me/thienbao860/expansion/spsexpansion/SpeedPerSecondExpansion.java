@@ -13,14 +13,11 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Listener, Cacheable {
 
-    private boolean activate;
     private final SPSManager manager;
     private BukkitTask task;
 
     public SpeedPerSecondExpansion() {
-        this.activate = false;
         this.manager = new SPSManager(this);
-        startClock();
     }
 
     @Override
