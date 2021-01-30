@@ -1,42 +1,28 @@
 package me.thienbao860.expansion.spsexpansion.manager;
 
+import me.thienbao860.expansion.spsexpansion.SpeedPerSecondExpansion;
 import me.thienbao860.expansion.spsexpansion.type.*;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TypeManager {
+public class SPSManager {
 
-    private List<SPS> spsList = new ArrayList<>();
-    private static TypeManager instance;
+    private final List<SPS> spsList = new ArrayList<>();
 
-    public TypeManager() {
+    public SPSManager(SpeedPerSecondExpansion expansion) {
         loadType();
     }
 
-    public static TypeManager instance() {
-        if (instance == null) {
-            instance = new TypeManager();
-        }
-        return instance;
+    public List<SPS> getSPSList() {
+        return spsList;
     }
 
     public void update() {
-        for (SPS sps : spsList) {
+        for (SPS sps : getSPSList()) {
             sps.updateSPS();
         }
-    }
-
-    public void addIn(Player player, String typeName) {
-        addIn(player, 1, typeName);
-    }
-
-    public void addIn(Player player, double value, String typeName) {
-        SPS sps = getSPSByName(typeName);
-        if (sps == null) return;
-
-        sps.addCache(player, value);
     }
 
     public void loadType() {
@@ -47,6 +33,7 @@ public class TypeManager {
         spsList.add(new EntityDamaging());
         spsList.add(new ExpCollecting());
         spsList.add(new PlayerHurting());
+        spsList.add(new Clicking());
     }
 
     public double getSPSValue(Player player, String name) {

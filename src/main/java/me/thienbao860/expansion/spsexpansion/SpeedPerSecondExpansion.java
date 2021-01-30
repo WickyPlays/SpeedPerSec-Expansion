@@ -3,14 +3,15 @@ package me.thienbao860.expansion.spsexpansion;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.Cacheable;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import me.thienbao860.expansion.spsexpansion.manager.TypeManager;
+import me.thienbao860.expansion.spsexpansion.manager.SPSManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -24,12 +25,12 @@ import java.text.DecimalFormat;
 public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Listener, Cacheable {
 
     private boolean activate;
-    private final TypeManager manager;
+    private final SPSManager manager;
     private BukkitTask task;
 
     public SpeedPerSecondExpansion() {
-        activate = false;
-        manager = TypeManager.instance();
+        this.activate = false;
+        this.manager = new SPSManager(this);
         startClock();
     }
 
@@ -45,62 +46,44 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
 
     @Override
     public String getVersion() {
-        return "1.2.0";
+        return "1.3.0";
     }
 
+    @Override
+    public boolean register() {
+        startClock();
+        return super.register();
+    }
+
+    @Override
     public String onRequest(OfflinePlayer op, String params) {
         Player player = op.getPlayer();
-        if (player == null) return null;
+        String[] args = params.split("_");
+        if (player == null) {
+            return null;
+        }
 
-        return String.valueOf(getVal(player, params));
+        if (args.length == 2) {
+            switch (args[1].toLowerCase()) {
+                case "int":
+                    return String.valueOf(toInt(getVal(player, args[0])));
+                case "double":
+                    return String.valueOf(formatted(getVal(player, args[0])));
+            }
+        }
+
+        return String.valueOf(getVal(player, args[0]));
     }
 
-    public int getVal(Player player, String typeName) {
-        return (int) manager.getSPSValue(player, typeName);
+    public double getVal(Player player, String typeName) {
+        return manager.getSPSValue(player, typeName);
     }
 
     public void startClock() {
-        if (!activate) {
-            activate = true;
-            task = Bukkit.getScheduler().runTaskTimerAsynchronously(PlaceholderAPIPlugin.getInstance(), manager::update, 0L, 20L);
-        }
-    }
+        this.task = Bukkit.getScheduler().runTaskTimerAsynchronously(
+                this.getPlaceholderAPI(),
+                manager::update, 0L, 20L);
 
-    @EventHandler
-    public void breakBlock(BlockBreakEvent e) {
-        manager.addIn(e.getPlayer(), "blockbreak");
-    }
-
-    @EventHandler
-    public void placeBlock(BlockPlaceEvent e) {
-        manager.addIn(e.getPlayer(), "blockplace");
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent e) {
-        Location from = e.getFrom().clone();
-        Location to = e.getTo().clone();
-        from.setY(0);
-        to.setY(0);
-
-        if (!from.getBlock().getLocation().equals(to.getBlock().getLocation())) {
-            manager.addIn(e.getPlayer(), "speeding");
-        }
-    }
-
-    @EventHandler
-    public void onAttack(EntityDamageByEntityEvent e) {
-        if (e.getDamager() instanceof Player) {
-            manager.addIn((Player) e.getDamager(), e.getFinalDamage(), "damaging");
-        }
-        if (e.getEntity() instanceof Player) {
-            manager.addIn((Player) e.getEntity(), e.getFinalDamage(), "hurting");
-        }
-    }
-
-    @EventHandler
-    public void onExpEarned(PlayerExpChangeEvent e) {
-        manager.addIn(e.getPlayer(), e.getAmount(), "expcollected");
     }
 
     @EventHandler
@@ -110,8 +93,11 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
 
     @Override
     public void clear() {
-        activate = true;
-        if (task != null) task.cancel();
+        if (task != null) {
+            task.cancel();
+            task = null;
+            manager.getSPSList().clear();
+        }
     }
 
     public int toInt(double d) {
@@ -119,8 +105,6 @@ public class SpeedPerSecondExpansion extends PlaceholderExpansion implements Lis
     }
 
     private String formatted(double d) {
-        DecimalFormat df = new DecimalFormat("#.##");
-        df.setRoundingMode(RoundingMode.CEILING);
-        return df.format(d);
+        return String.format("%.2f", d);
     }
 }

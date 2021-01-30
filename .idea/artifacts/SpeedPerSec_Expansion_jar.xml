@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="SpeedPerSec-Expansion:jar">
-    <output-path>D:/Development Place/Server (1.12.2)/plugins/PlaceholderAPI/expansions</output-path>
+    <output-path>D:/Development Place/Server (1.16.4)/plugins/PlaceholderAPI/expansions</output-path>
     <root id="archive" name="SpeedPerSec-Expansion.jar">
       <element id="module-output" name="SpeedPerSec-Expansion" />
     </root>
